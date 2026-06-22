@@ -43,6 +43,35 @@ public:
         this->costs = {};
     }
 
+    BaseLinearModel(const BaseLinearModel&) = delete;
+    BaseLinearModel& operator=(const BaseLinearModel&) = delete;
+
+    BaseLinearModel(BaseLinearModel&& other) noexcept
+        : weights(std::move(other.weights)),
+          scaler(std::move(other.scaler)),
+          bias(other.bias),
+          costs(std::move(other.costs)),
+          optimizer(other.optimizer),
+          owns_optimizer(other.owns_optimizer) {
+        other.optimizer = nullptr;
+        other.owns_optimizer = false;
+    }
+
+    BaseLinearModel& operator=(BaseLinearModel&& other) noexcept {
+        if (this != &other) {
+            if (owns_optimizer && optimizer) delete optimizer;
+            weights = std::move(other.weights);
+            scaler = std::move(other.scaler);
+            bias = other.bias;
+            costs = std::move(other.costs);
+            optimizer = other.optimizer;
+            owns_optimizer = other.owns_optimizer;
+            other.optimizer = nullptr;
+            other.owns_optimizer = false;
+        }
+        return *this;
+    }
+
     ~BaseLinearModel() override {
         if (owns_optimizer && optimizer) {
             delete optimizer;

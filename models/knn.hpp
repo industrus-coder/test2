@@ -65,7 +65,7 @@ public:
         } else if (distance_type == Manhattan) {
             return manhattan_distance(a, b);
         } else if (distance_type == Cosine) {
-            return cosine(a, b);
+            return 1.0 - cosine(a, b);
         }
 
         return euclidean_dist(a, b); //default

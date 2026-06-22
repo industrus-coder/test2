@@ -54,18 +54,33 @@ public:
         this->costs = {};
     }
 
-    LogisticRegression(const LogisticRegression &other) {
-        weights = other.weights;
-        scaler = other.scaler;
-        bias = other.bias;
-        costs = other.costs;
-        if (other.owns_optimizer) {
-            optimizer = new GradientDescent<LinearParams, Matrix>(*other.optimizer);
-            owns_optimizer = true;
-        } else {
+    LogisticRegression(const LogisticRegression&) = delete;
+    LogisticRegression& operator=(const LogisticRegression&) = delete;
+
+    LogisticRegression(LogisticRegression&& other) noexcept
+        : weights(std::move(other.weights)),
+          scaler(std::move(other.scaler)),
+          bias(other.bias),
+          costs(std::move(other.costs)),
+          optimizer(other.optimizer),
+          owns_optimizer(other.owns_optimizer) {
+        other.optimizer = nullptr;
+        other.owns_optimizer = false;
+    }
+
+    LogisticRegression& operator=(LogisticRegression&& other) noexcept {
+        if (this != &other) {
+            if (owns_optimizer && optimizer) delete optimizer;
+            weights = std::move(other.weights);
+            scaler = std::move(other.scaler);
+            bias = other.bias;
+            costs = std::move(other.costs);
             optimizer = other.optimizer;
-            owns_optimizer = false;
+            owns_optimizer = other.owns_optimizer;
+            other.optimizer = nullptr;
+            other.owns_optimizer = false;
         }
+        return *this;
     }
 
     ~LogisticRegression() {
